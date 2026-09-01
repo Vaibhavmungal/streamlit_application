@@ -1,15 +1,12 @@
-FROM python:3.10-slim-buster
+FROM python:3.10-slim
 
 EXPOSE 8501
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-# Install system dependencies including curl for healthcheck
+# Install curl for container health checks
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    software-properties-common \
-    git \
     curl \
     && rm -rf /var/lib/apt/lists/*
 

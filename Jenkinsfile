@@ -1,18 +1,10 @@
 pipeline {
     agent any
 
-    parameters {
-        string(
-            name: 'DOCKER_IMAGE_NAME',
-            defaultValue: 'vaibhavmungal/streamlit-app',
-            description: 'Docker Hub repository name (e.g., username/repository)'
-        )
-    }
-
     environment {
-        DOCKER_IMAGE = "${params.DOCKER_IMAGE_NAME}"
+        DOCKER_IMAGE = 'rutwik02/streamlit-app'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
-        DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'
+        DOCKER_CREDENTIALS_ID = 'DOCKER_HUB_CREDS'
     }
 
     stages {
