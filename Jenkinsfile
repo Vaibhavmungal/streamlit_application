@@ -10,10 +10,10 @@ pipeline {
     stages {
         stage('Cleanup Disk Space') {
             steps {
-                echo "Cleaning up unused Docker cache and images to free disk space..."
+                echo "Cleaning up dangling Docker cache to free disk space..."
                 sh '''
-                    docker system prune -af || true
-                    docker builder prune -af || true
+                    docker image prune -f || true
+                    docker builder prune -f || true
                 '''
             }
         }
@@ -57,18 +57,33 @@ pipeline {
                 }
             }
         }
+
+        stage('Run Container') {
+            steps {
+                echo "Deploying and running Streamlit container on port 8501..."
+                script {
+                    sh """
+                        docker stop streamlit-app || true
+                        docker rm streamlit-app || true
+                        docker run -d -p 8501:8501 --restart unless-stopped --name streamlit-app ${DOCKER_IMAGE}:latest
+                        sleep 3
+                        docker ps | grep streamlit-app
+                    """
+                }
+            }
+        }
     }
 
     post {
         always {
-            echo "Cleaning up local Docker images..."
-            sh """
-                docker rmi ${DOCKER_IMAGE}:${IMAGE_TAG} ${DOCKER_IMAGE}:latest || true
-                docker system prune -f || true
-            """
+            echo "Cleaning dangling images and builder cache..."
+            sh '''
+                docker image prune -f || true
+                docker builder prune -f || true
+            '''
         }
         success {
-            echo "Pipeline completed successfully! Docker image pushed to Docker Hub: ${DOCKER_IMAGE}:${IMAGE_TAG}"
+            echo "Pipeline completed successfully! Streamlit app is live at http://<server-ip>:8501"
         }
         failure {
             echo "Pipeline failed! Please check stage logs for details."
