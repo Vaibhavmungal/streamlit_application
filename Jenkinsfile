@@ -8,6 +8,16 @@ pipeline {
     }
 
     stages {
+        stage('Cleanup Disk Space') {
+            steps {
+                echo "Cleaning up unused Docker cache and images to free disk space..."
+                sh '''
+                    docker system prune -af || true
+                    docker builder prune -af || true
+                '''
+            }
+        }
+
         stage('Checkout') {
             steps {
                 echo "Checking out source code from Git..."
@@ -54,6 +64,7 @@ pipeline {
             echo "Cleaning up local Docker images..."
             sh """
                 docker rmi ${DOCKER_IMAGE}:${IMAGE_TAG} ${DOCKER_IMAGE}:latest || true
+                docker system prune -f || true
             """
         }
         success {
